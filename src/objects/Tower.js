@@ -1,69 +1,113 @@
 // ============================================================
-// Medieval Kingshot - Tower (Torre do Jogador)
+// Medieval Kingshot - Tower
 // ============================================================
-// Castelo central do jogador. Atira automaticamente no
-// inimigo mais próximo dentro do alcance.
+// Torres construídas pelo jogador. Atacam sozinhas.
+// Tipos: arqueiro (flechas), canhão (bolas de ferro),
+// balista (setas grandes), mago (raios mágicos).
 // ============================================================
 
 import Phaser from 'phaser';
 
+export const TIPOS_TORRE = {
+  archer: {
+    tipo: 'archer',
+    textura: 'tower_archer',
+    nome: 'Torre de Arqueiro',
+    custo: 25,
+    alcance: 200,
+    intervaloAtaque: 800,
+    dano: 15,
+    projetilTextura: 'arrow',
+    projetilVelocidade: 400,
+    projetilEscala: 1,
+    corDestaque: 0xd4a544,
+  },
+  cannon: {
+    tipo: 'cannon',
+    textura: 'tower_cannon',
+    nome: 'Canhão',
+    custo: 60,
+    alcance: 220,
+    intervaloAtaque: 1500,
+    dano: 60,
+    projetilTextura: 'cannonball',
+    projetilVelocidade: 300,
+    projetilEscala: 1,
+    corDestaque: 0x9a8a7a,
+  },
+  ballista: {
+    tipo: 'ballista',
+    textura: 'tower_ballista',
+    nome: 'Balista',
+    custo: 100,
+    alcance: 280,
+    intervaloAtaque: 1200,
+    dano: 40,
+    projetilTextura: 'arrow',
+    projetilVelocidade: 600,
+    projetilEscala: 1.5,
+    corDestaque: 0x8b5a2b,
+  },
+  mage: {
+    tipo: 'mage',
+    textura: 'tower_mage',
+    nome: 'Torre Mágica',
+    custo: 150,
+    alcance: 240,
+    intervaloAtaque: 1000,
+    dano: 25,
+    projetilTextura: 'magic_bolt',
+    projetilVelocidade: 500,
+    projetilEscala: 1,
+    corDestaque: 0x9b59b6,
+  },
+};
+
 export default class Tower extends Phaser.GameObjects.Container {
-  constructor(scene, x, y, config = {}) {
+  constructor(scene, x, y, config) {
     super(scene, x, y);
-
     this.scene = scene;
-    this.maxHp = config.hp ?? 100;
-    this.hp = this.maxHp;
-    this.danoPorToque = config.danoPorToque ?? 10;
-    this.alcance = config.alcance ?? 320;
-    this.intervaloTiro = config.intervaloTiro ?? 1000;
-    this.danoFlecha = config.danoFlecha ?? 25;
+    this.config = config;
+    this.tipo = config.tipo;
+    this.nome = config.nome;
+    this.alcance = config.alcance;
+    this.intervaloAtaque = config.intervaloAtaque;
+    this.dano = config.dano;
+    this.ultimoTiro = 0;
 
-    // ----- Sprite -----
-    if (scene.textures.exists('tower')) {
-      this.sprite = scene.add.image(0, 0, 'tower');
-      this.sprite.setDisplaySize(96, 96);
-      this.add(this.sprite);
-    } else {
-      // Fallback (placeholder caso a imagem não carregue)
-      const base = scene.add.rectangle(0, 0, 70, 70, 0x6b6b6b);
-      base.setStrokeStyle(3, 0x3a3a3a);
-      const topo = scene.add.rectangle(0, -20, 50, 20, 0xd4a544);
-      topo.setStrokeStyle(2, 0x5a3a20);
-      this.add([base, topo]);
-    }
+    // Sprite da torre
+    this.sprite = scene.add.image(0, 0, config.textura);
+    this.sprite.setDisplaySize(64, 64);
+    this.add(this.sprite);
 
-    // ----- Barra de HP -----
-    this.barraFundo = scene.add.rectangle(0, -65, 80, 10, 0x000000, 0.7);
-    this.barraFundo.setStrokeStyle(1, 0xffffff, 0.6);
-    this.barraHp = scene.add.rectangle(0, -65, 76, 6, 0xe74c3c);
-    this.add([this.barraFundo, this.barraHp]);
+    // Sombra
+    const sombra = scene.add.ellipse(0, 28, 50, 12, 0x000000, 0.4);
+    this.add(sombra);
+    this.sprite.setDepth(1);
+    sombra.setDepth(0);
 
-    this.textoHp = scene.add
-      .text(0, -82, `${this.hp}/${this.maxHp}`, {
-        fontFamily: 'Georgia, serif',
-        fontSize: '12px',
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setOrigin(0.5);
-    this.add(this.textoHp);
-
-    // ----- Física -----
+    // Adiciona à cena
     scene.add.existing(this);
-    scene.physics.add.existing(this, true);
-    this.body.setCircle(35, 13, 13);
 
-    // ----- Timer de tiro -----
-    this.timerTiro = scene.time.addEvent({
-      delay: this.intervaloTiro,
-      callback: this.atirar,
-      callbackScope: this,
-      loop: true,
+    // Hitbox circular
+    scene.physics.add.existing(this, true);
+    this.body.setCircle(24, -24, -24);
+
+    // Animação de "respiração"
+    scene.tweens.add({
+      targets: this.sprite,
+      scaleX: { from: 1, to: 1.03 },
+      scaleY: { from: 1, to: 0.97 },
+      duration: 1000,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.inOut',
     });
   }
 
+  /**
+   * Encontra o inimigo mais próximo dentro do alcance.
+   */
   inimigoMaisProximo() {
     if (!this.scene.inimigos || this.scene.inimigos.getLength() === 0) return null;
     let maisProximo = null;
@@ -79,40 +123,28 @@ export default class Tower extends Phaser.GameObjects.Container {
     return maisProximo;
   }
 
-  atirar() {
+  /**
+   * Ataca o inimigo mais próximo se o cooldown terminou.
+   */
+  tentarAtacar(time) {
+    if (time - this.ultimoTiro < this.intervaloAtaque) return;
     const alvo = this.inimigoMaisProximo();
     if (!alvo) return;
-    if (this.scene.criarProjetil) {
-      this.scene.criarProjetil(this.x, this.y - 10, alvo, this.danoFlecha);
-    }
-  }
+    this.ultimoTiro = time;
 
-  receberDano(dano) {
-    this.hp = Math.max(0, this.hp - dano);
-    this.atualizarBarraHp();
-
-    if (this.sprite) {
-      this.sprite.setTint(0xff4444);
-      this.scene.time.delayedCall(120, () => {
-        if (this.sprite) this.sprite.clearTint();
-      });
+    // Cria o projétil
+    if (this.scene.criarProjetilTorre) {
+      this.scene.criarProjetilTorre(this.x, this.y - 10, alvo, this.dano, this.config);
     }
 
-    if (this.scene.onTowerDamaged) this.scene.onTowerDamaged(this.hp);
-    if (this.hp <= 0 && this.scene.onDerrota) this.scene.onDerrota();
+    // Flash de tiro
+    this.sprite.setTint(0xfff0a0);
+    this.scene.time.delayedCall(80, () => {
+      if (this.sprite && this.sprite.active) this.sprite.clearTint();
+    });
   }
 
-  atualizarBarraHp() {
-    const pct = Math.max(0, this.hp / this.maxHp);
-    this.barraHp.width = 76 * pct;
-    if (pct > 0.5) this.barraHp.fillColor = 0x2ecc71;
-    else if (pct > 0.25) this.barraHp.fillColor = 0xf1c40f;
-    else this.barraHp.fillColor = 0xe74c3c;
-    this.textoHp.setText(`${this.hp}/${this.maxHp}`);
-  }
-
-  destroy(fromScene) {
-    if (this.timerTiro) this.timerTiro.remove();
-    super.destroy(fromScene);
+  update(time) {
+    this.tentarAtacar(time);
   }
 }

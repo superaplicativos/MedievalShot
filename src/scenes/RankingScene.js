@@ -180,17 +180,17 @@ export default class RankingScene extends Phaser.Scene {
   renderizarTop10(top10) {
     const largura = this.scale.width;
 
-    // Painel de pergaminho grande
-    const card = this.add.container(largura / 2, 290);
-    const painel = this.add.image(0, 0, 'painel_pergaminho').setDisplaySize(520, 260);
+    // Painel de pergaminho grande (mais largo para 16:9)
+    const card = this.add.container(largura / 2, 360);
+    const painel = this.add.image(0, 0, 'painel_pergaminho').setDisplaySize(800, 380);
     card.add(painel);
 
     // Título
     card.add(
       this.add
-        .text(0, -110, 'TOP 10 GUERREIROS', {
+        .text(0, -160, 'TOP 10 GUERREIROS', {
           fontFamily: 'Cinzel, serif',
-          fontSize: '20px',
+          fontSize: '24px',
           fontStyle: 'bold',
           color: '#5a3a20',
         })
@@ -215,28 +215,28 @@ export default class RankingScene extends Phaser.Scene {
     }
 
     // Cabeçalho da tabela
-    const headerY = -55;
-    card.add(this.add.text(-220, headerY, '#', {
+    const headerY = -100;
+    card.add(this.add.text(-340, headerY, '#', {
       fontFamily: 'Cinzel, serif',
-      fontSize: '12px',
+      fontSize: '14px',
       fontStyle: 'bold',
       color: '#8a6a40',
     }).setOrigin(0, 0.5));
-    card.add(this.add.text(-180, headerY, 'GUERREIRO', {
+    card.add(this.add.text(-280, headerY, 'GUERREIRO', {
       fontFamily: 'Cinzel, serif',
-      fontSize: '12px',
+      fontSize: '14px',
       fontStyle: 'bold',
       color: '#8a6a40',
     }).setOrigin(0, 0.5));
-    card.add(this.add.text(120, headerY, 'PONTOS', {
+    card.add(this.add.text(180, headerY, 'PONTOS', {
       fontFamily: 'Cinzel, serif',
-      fontSize: '12px',
+      fontSize: '14px',
       fontStyle: 'bold',
       color: '#8a6a40',
     }).setOrigin(0, 0.5));
-    card.add(this.add.text(200, headerY, 'FASE', {
+    card.add(this.add.text(280, headerY, 'FASE', {
       fontFamily: 'Cinzel, serif',
-      fontSize: '12px',
+      fontSize: '14px',
       fontStyle: 'bold',
       color: '#8a6a40',
     }).setOrigin(0, 0.5));
@@ -244,18 +244,18 @@ export default class RankingScene extends Phaser.Scene {
     // Linha separadora
     const sep = this.add.graphics();
     sep.fillStyle(0x8a6a40, 0.4);
-    sep.fillRect(-220, headerY + 10, 440, 1);
+    sep.fillRect(-340, headerY + 12, 680, 1);
     card.add(sep);
 
     // Lista
     top10.forEach((jogador, i) => {
-      const y = -35 + i * 18;
+      const y = -75 + i * 22;
       const isTop3 = i < 3;
 
       // Destaque para top 3 (fundo colorido)
       if (isTop3) {
         const corFundo = i === 0 ? 0xd4a544 : i === 1 ? 0xc0c0c0 : 0xcd7f32;
-        const hl = this.add.rectangle(0, y, 480, 16, corFundo, 0.2);
+        const hl = this.add.rectangle(0, y, 720, 20, corFundo, 0.2);
         card.add(hl);
       }
 
@@ -268,38 +268,38 @@ export default class RankingScene extends Phaser.Scene {
 
       const cor = i === 0 ? '#d4a544' : i === 1 ? '#888888' : i === 2 ? '#cd7f32' : '#5a3a20';
 
-      card.add(this.add.text(-220, y, posText, {
+      card.add(this.add.text(-340, y, posText, {
         fontFamily: 'Cinzel, serif',
-        fontSize: '13px',
+        fontSize: '15px',
         fontStyle: 'bold',
         color: cor,
       }).setOrigin(0, 0.5));
 
       // Ícone para top 3
       if (isTop3) {
-        card.add(this.add.image(-200, y, 'icon_trofeu').setScale(0.4));
+        card.add(this.add.image(-310, y, 'icon_trofeu').setScale(0.5));
       }
 
       // Nickname (com limite de 16 chars)
       const nick = (jogador.nickname || 'Anônimo').substring(0, 16);
-      card.add(this.add.text(-180, y, nick, {
+      card.add(this.add.text(-280, y, nick, {
         fontFamily: 'Cinzel, serif',
-        fontSize: '12px',
+        fontSize: '14px',
         color: '#5a3a20',
       }).setOrigin(0, 0.5));
 
       // Score
-      card.add(this.add.text(120, y, `${(jogador.score || 0).toLocaleString('pt-BR')}`, {
+      card.add(this.add.text(180, y, `${(jogador.score || 0).toLocaleString('pt-BR')}`, {
         fontFamily: 'Cinzel, serif',
-        fontSize: '12px',
+        fontSize: '14px',
         fontStyle: 'bold',
         color: '#5a3a20',
       }).setOrigin(0, 0.5));
 
       // Level
-      card.add(this.add.text(200, y, `${jogador.level || 1}`, {
+      card.add(this.add.text(280, y, `${jogador.level || 1}`, {
         fontFamily: 'Cinzel, serif',
-        fontSize: '12px',
+        fontSize: '14px',
         color: '#8a6a40',
       }).setOrigin(0, 0.5));
     });
@@ -310,10 +310,10 @@ export default class RankingScene extends Phaser.Scene {
   // ============================================================
   renderizarMeuRanking(contexto) {
     const largura = this.scale.width;
-    const card = this.add.container(largura / 2, 470);
+    const card = this.add.container(largura / 2, this.scale.height - 100);
 
     // Painel destacado (verde/dourado)
-    const painel = this.add.image(0, 0, 'painel_madeira').setDisplaySize(520, 130);
+    const painel = this.add.image(0, 0, 'painel_madeira').setDisplaySize(720, 130);
     painel.setTint(0xc8d8c8); // leve tom verde
     card.add(painel);
 

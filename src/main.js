@@ -1,7 +1,9 @@
 // ============================================================
-// Medieval Kingshot - Ponto de Entrada (main.js)
+// Medieval Kingshot - Entry Point (Formato 16:9 Responsivo)
 // ============================================================
-// Registra todas as cenas do jogo (single-player puro).
+// Engine estilo Kingshot: herói controlado por mouse/toque,
+// ataque automático, coleta de moedas, construção de torres.
+// Funciona em PC (mouse) e celular (toque) - formato horizontal.
 // ============================================================
 
 import Phaser from 'phaser';
@@ -9,16 +11,18 @@ import BootScene from './scenes/BootScene.js';
 import PreloadScene from './scenes/PreloadScene.js';
 import MenuScene from './scenes/MenuScene.js';
 import RankingScene from './scenes/RankingScene.js';
-import Level01Scene from './scenes/Level01Scene.js';
-import Level02Scene from './scenes/Level02Scene.js';
+import GameScene from './scenes/GameScene.js';
+
+// Resolução base 16:9 - escala para preencher a tela inteira
+const LARGURA_BASE = 1280;
+const ALTURA_BASE = 720;
 
 const config = {
   type: Phaser.AUTO,
   parent: 'game-container',
-  width: 800,
-  height: 600,
+  width: LARGURA_BASE,
+  height: ALTURA_BASE,
   backgroundColor: '#1a1410',
-  pixelArt: false,
   physics: {
     default: 'arcade',
     arcade: {
@@ -26,11 +30,17 @@ const config = {
       debug: false,
     },
   },
+  // Scale.RESIZE: preenche a tela inteira mantendo a proporção 16:9
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.RESIZE,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: LARGURA_BASE,
+    height: ALTURA_BASE,
   },
-  scene: [BootScene, PreloadScene, MenuScene, RankingScene, Level01Scene, Level02Scene],
+  input: {
+    activePointers: 3, // suporta multi-toque
+  },
+  scene: [BootScene, PreloadScene, MenuScene, RankingScene, GameScene],
 };
 
 const game = new Phaser.Game(config);
