@@ -30,9 +30,9 @@ const config = {
       debug: false,
     },
   },
-  // Scale.RESIZE: preenche a tela inteira mantendo a proporção 16:9
+  // Scale.FIT: escala mantendo proporção 16:9 (mais estável que RESIZE)
   scale: {
-    mode: Phaser.Scale.RESIZE,
+    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: LARGURA_BASE,
     height: ALTURA_BASE,
