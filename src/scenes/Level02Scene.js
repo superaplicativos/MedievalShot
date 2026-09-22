@@ -313,51 +313,74 @@ export default class Level02Scene extends Phaser.Scene {
   }
 
   criarHUD() {
-    const hudFundo = this.add.rectangle(400, 25, 800, 50, 0x000000, 0.6);
+    // Painel de madeira no topo
+    const hudFundo = this.add.image(400, 25, 'painel_madeira').setDisplaySize(780, 50);
     hudFundo.setDepth(50);
 
-    this.hudKills = this.add
-      .text(20, 15, `Ogros Mortos: 0/${this.configFase.killsParaVencer}`, {
-        fontFamily: 'Georgia, serif',
-        fontSize: '16px',
-        color: '#f5e6c8',
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setDepth(51);
+    // ----- Kills (esquerda) -----
+    const killsContainer = this.add.container(20, 25).setDepth(51);
+    killsContainer.add(this.add.image(0, 0, 'icon_caveira').setScale(0.7));
+    this.hudKillsTexto = this.add.text(20, 0, `0/${this.configFase.killsParaVencer}`, {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '14px',
+      fontStyle: 'bold',
+      color: '#f5e6c8',
+    }).setOrigin(0, 0.5);
+    killsContainer.add(this.hudKillsTexto);
 
-    this.hudTempo = this.add
-      .text(400, 15, '⏱ 75s', {
-        fontFamily: 'Georgia, serif',
-        fontSize: '18px',
-        color: '#e74c3c',
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setOrigin(0.5, 0)
-      .setDepth(51);
+    // ----- Tempo (centro) -----
+    const tempoContainer = this.add.container(400, 25).setDepth(51);
+    tempoContainer.add(this.add.image(-40, 0, 'icon_relogio').setScale(0.7));
+    this.hudTempo = this.add.text(0, 0, '75s', {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '16px',
+      fontStyle: 'bold',
+      color: '#e74c3c',
+      stroke: '#000000',
+      strokeThickness: 3,
+    }).setOrigin(0, 0.5);
+    tempoContainer.add(this.hudTempo);
 
-    this.hudMoedas = this.add
-      .text(640, 15, '💰 0', {
-        fontFamily: 'Georgia, serif',
-        fontSize: '16px',
-        color: '#f5e6c8',
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setDepth(51);
+    // ----- HP da torre (centro-direita) -----
+    const hpContainer = this.add.container(280, 25).setDepth(51);
+    hpContainer.add(this.add.image(0, 0, 'icon_escudo').setScale(0.7));
+    this.hudHpTexto = this.add.text(20, 0, `${this.configFase.torreHp}/${this.configFase.torreHp}`, {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '14px',
+      fontStyle: 'bold',
+      color: '#2ecc71',
+      stroke: '#000000',
+      strokeThickness: 2,
+    }).setOrigin(0, 0.5);
+    hpContainer.add(this.hudHpTexto);
 
-    const btnMenu = this.add
-      .text(760, 570, '☰ Menu', {
-        fontFamily: 'Georgia, serif',
-        fontSize: '14px',
-        color: '#ffffff',
-        backgroundColor: '#5a2a10',
-        padding: { x: 8, y: 4 },
-      })
-      .setInteractive({ useHandCursor: true })
-      .setDepth(100);
-    btnMenu.on('pointerdown', () => {
+    // ----- Moedas (direita) -----
+    const moedasContainer = this.add.container(640, 25).setDepth(51);
+    moedasContainer.add(this.add.image(0, 0, 'icon_moeda').setScale(0.7));
+    this.hudMoedas = this.add.text(20, 0, '0', {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '14px',
+      fontStyle: 'bold',
+      color: '#f5e6c8',
+      stroke: '#000000',
+      strokeThickness: 2,
+    }).setOrigin(0, 0.5);
+    moedasContainer.add(this.hudMoedas);
+
+    // Botão Menu
+    const btnMenu = this.add.container(760, 570).setDepth(100);
+    const btnMenuFundo = this.add.image(0, 0, 'btn_madeira_peq').setDisplaySize(120, 32);
+    btnMenu.add(btnMenuFundo);
+    btnMenu.add(this.add.text(0, 0, 'MENU', {
+      fontFamily: 'Cinzel, serif',
+      fontSize: '12px',
+      fontStyle: 'bold',
+      color: '#f5e6c8',
+    }).setOrigin(0.5));
+    btnMenuFundo.setInteractive({ useHandCursor: true });
+    btnMenuFundo.on('pointerover', () => btnMenuFundo.setTint(0xcc6666));
+    btnMenuFundo.on('pointerout', () => btnMenuFundo.clearTint());
+    btnMenuFundo.on('pointerdown', () => {
       if (confirm('Voltar ao menu? Seu progresso atual será perdido.')) {
         this.scene.start('MenuScene');
       }
@@ -365,8 +388,17 @@ export default class Level02Scene extends Phaser.Scene {
   }
 
   atualizarHUD() {
-    this.hudKills.setText(`Ogros Mortos: ${this.kills}/${this.configFase.killsParaVencer}`);
-    this.hudMoedas.setText(`💰 ${this.moedas}`);
+    this.hudKillsTexto.setText(`${this.kills}/${this.configFase.killsParaVencer}`);
+    this.hudMoedas.setText(`${this.moedas}`);
+    if (this.torre && this.hudHpTexto) {
+      const hp = this.torre.hp;
+      const max = this.torre.maxHp;
+      this.hudHpTexto.setText(`${hp}/${max}`);
+      const pct = hp / max;
+      if (pct > 0.5) this.hudHpTexto.setColor('#2ecc71');
+      else if (pct > 0.25) this.hudHpTexto.setColor('#f1c40f');
+      else this.hudHpTexto.setColor('#e74c3c');
+    }
   }
 
   mostrarTelaFim(titulo, cor, subtitulo, venceu) {
@@ -534,6 +566,6 @@ export default class Level02Scene extends Phaser.Scene {
 
     const decorrido = time - this.tempoInicio;
     const restante = Math.max(0, this.configFase.tempoSobrevivencia - decorrido);
-    this.hudTempo.setText(`⏱ ${(restante / 1000).toFixed(1)}s`);
+    this.hudTempo.setText(`${(restante / 1000).toFixed(1)}s`);
   }
 }
