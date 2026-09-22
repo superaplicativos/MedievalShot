@@ -4,11 +4,7 @@
 // Estilo Kingshot: quadrado tracejado no chão. O herói precisa
 // caminhar até ele e depositar moedas. Quando atinge o custo,
 // a torre é construída automaticamente.
-//
-// Mecânica:
-//   - Hero entra na zona: começa a "depositar" moedas
-//   - A cada 100ms, 1 moeda é transferida do inventário para a zona
-//   - Quando o total depositado >= custo, a torre é construída
+// (Sem physics body - detecção por distância na GameScene)
 // ============================================================
 
 import Phaser from 'phaser';
@@ -25,19 +21,20 @@ export default class BuildZone extends Phaser.GameObjects.Container {
     this.ativa = true;
     this.heroiDentro = false;
     this.ultimoDeposito = 0;
+    this.raioColeta = 50;
 
     // Sprite da zona
-    this.sprite = scene.add.image(0, 0, 'buildzone').setDisplaySize(64, 64);
+    this.sprite = scene.add.image(0, 0, 'buildzone').setDisplaySize(80, 80);
     this.add(this.sprite);
 
     // Ícone da torre no centro (prévia do que vai ser construído)
-    this.iconeTorre = scene.add.image(0, -8, config.texturaTorre).setDisplaySize(32, 32);
+    this.iconeTorre = scene.add.image(0, -8, config.texturaTorre).setDisplaySize(40, 40);
     this.iconeTorre.setAlpha(0.7);
     this.add(this.iconeTorre);
 
     // Texto com o custo
     this.textoCusto = scene.add
-      .text(0, 18, `${this.custo}`, {
+      .text(0, 22, `${this.custo}`, {
         fontFamily: 'Cinzel, serif',
         fontSize: '14px',
         fontStyle: 'bold',
@@ -49,16 +46,11 @@ export default class BuildZone extends Phaser.GameObjects.Container {
     this.add(this.textoCusto);
 
     // Ícone de moeda ao lado do custo
-    this.iconeMoeda = scene.add.image(-12, 18, 'icon_moeda').setScale(0.5);
+    this.iconeMoeda = scene.add.image(-12, 22, 'icon_moeda').setScale(0.5);
     this.add(this.iconeMoeda);
 
     // Adiciona à cena
     scene.add.existing(this);
-
-    // Hitbox para detectar herói
-    scene.physics.add.existing(this, true);
-    this.body.setSize(50, 50);
-    this.body.setOffset(-25, -25);
 
     // Animação pulsante
     scene.tweens.add({
@@ -74,17 +66,29 @@ export default class BuildZone extends Phaser.GameObjects.Container {
   }
 
   /**
-   * Chamado quando o herói entra na zona.
+   * Verifica se o herói está dentro da zona (por distância).
    */
+  verificarHeroi(heroi) {
+    if (!this.ativa) return;
+    const dist = Phaser.Math.Distance.Between(heroi.x, heroi.y, this.x, this.y);
+    if (dist < this.raioColeta) {
+      if (!this.heroiDentro) {
+        this.heroiEntrou();
+      }
+      return true;
+    } else {
+      if (this.heroiDentro) {
+        this.heroiSaiu();
+      }
+      return false;
+    }
+  }
+
   heroiEntrou() {
     this.heroiDentro = true;
-    // Highlight da zona
     this.sprite.setTint(0xfff0a0);
   }
 
-  /**
-   * Chamado quando o herói sai da zona.
-   */
   heroiSaiu() {
     this.heroiDentro = false;
     this.sprite.clearTint();
@@ -107,7 +111,7 @@ export default class BuildZone extends Phaser.GameObjects.Container {
     const restante = this.custo - this.depositado;
     this.textoCusto.setText(`${Math.max(0, restante)}`);
 
-    // Pequena animação de "engolir" a moeda
+    // Pequena animação
     this.scene.tweens.add({
       targets: this.iconeMoeda,
       scaleX: { from: 0.5, to: 0.7 },
@@ -118,7 +122,6 @@ export default class BuildZone extends Phaser.GameObjects.Container {
 
     if (this.scene.atualizarHUD) this.scene.atualizarHUD();
 
-    // Verifica se atingiu o custo
     if (this.depositado >= this.custo) {
       this.construirTorre();
       return true;
@@ -126,9 +129,6 @@ export default class BuildZone extends Phaser.GameObjects.Container {
     return false;
   }
 
-  /**
-   * Constrói a torre e desativa a zona.
-   */
   construirTorre() {
     this.ativa = false;
 

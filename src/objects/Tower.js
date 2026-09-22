@@ -86,12 +86,8 @@ export default class Tower extends Phaser.GameObjects.Container {
     this.sprite.setDepth(1);
     sombra.setDepth(0);
 
-    // Adiciona à cena
+    // Adiciona à cena (sem physics - colisão por distância)
     scene.add.existing(this);
-
-    // Hitbox circular
-    scene.physics.add.existing(this, true);
-    this.body.setCircle(24, -24, -24);
 
     // Animação de "respiração"
     scene.tweens.add({

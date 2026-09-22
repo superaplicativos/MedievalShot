@@ -3,6 +3,7 @@
 // ============================================================
 // O castelo é a base principal. Se o HP chegar a 0, game over.
 // Os inimigos avançam em direção ao castelo.
+// (Sem physics body - detecção por distância)
 // ============================================================
 
 import Phaser from 'phaser';
@@ -16,19 +17,19 @@ export default class Castle extends Phaser.GameObjects.Container {
     this.hp = this.maxHp;
 
     // Sprite do castelo
-    this.sprite = scene.add.image(0, 0, 'castle').setDisplaySize(120, 120);
+    this.sprite = scene.add.image(0, 0, 'castle').setDisplaySize(140, 140);
     this.add(this.sprite);
 
     // Barra de HP acima do castelo
-    this.barraFundo = scene.add.rectangle(0, -75, 100, 12, 0x000000, 0.8);
+    this.barraFundo = scene.add.rectangle(0, -85, 100, 12, 0x000000, 0.8);
     this.barraFundo.setStrokeStyle(1, 0xffffff, 0.5);
     this.add(this.barraFundo);
 
-    this.barraHp = scene.add.rectangle(0, -75, 96, 8, 0xe74c3c);
+    this.barraHp = scene.add.rectangle(0, -85, 96, 8, 0xe74c3c);
     this.add(this.barraHp);
 
     this.textoHp = scene.add
-      .text(0, -90, `${this.hp}/${this.maxHp}`, {
+      .text(0, -100, `${this.hp}/${this.maxHp}`, {
         fontFamily: 'Cinzel, serif',
         fontSize: '12px',
         fontStyle: 'bold',
@@ -41,9 +42,8 @@ export default class Castle extends Phaser.GameObjects.Container {
 
     scene.add.existing(this);
 
-    // Física
-    scene.physics.add.existing(this, true);
-    this.body.setCircle(60, -60, -60);
+    // Sem physics body - a detecção é feita por distância na GameScene
+    this.raioColisao = 60;
   }
 
   receberDano(dano) {

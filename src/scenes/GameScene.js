@@ -110,13 +110,8 @@ export default class GameScene extends Phaser.Scene {
     });
 
     // ============================================================
-    // COLISÕES
+    // COLISÕES (apenas entre objetos com physics body)
     // ============================================================
-    // Herói vs Build Zones (detectar entrada/saída)
-    this.physics.add.overlap(this.heroi, this.buildZones, (heroi, zona) => {
-      if (zona.ativa) zona.heroiEntrou();
-    });
-
     // Projéteis do herói vs Inimigos
     this.physics.add.overlap(this.projeteisHeroi, this.inimigos, (flecha, inimigo) => {
       if (!flecha.active || !inimigo.active) return;
@@ -129,11 +124,7 @@ export default class GameScene extends Phaser.Scene {
       projetil.bater(inimigo);
     });
 
-    // Inimigos vs Castelo (causam dano ao chegar)
-    this.physics.add.overlap(this.inimigos, this.castelo, (inimigo, castelo) => {
-      if (inimigo.estaMorto) return;
-      inimigo.baterNoCastelo();
-    });
+    // Colisão Inimigos vs Castelo é feita por distância no update()
 
     // ============================================================
     // CONTROLES (mouse + toque)
@@ -702,26 +693,26 @@ export default class GameScene extends Phaser.Scene {
       });
     }
 
-    // Atualiza inimigos
-    if (this.inimigos) {
+    // Atualiza inimigos + verifica colisão com castelo
+    if (this.inimigos && this.castelo) {
       this.inimigos.getChildren().forEach((inimigo) => {
         if (inimigo.update) inimigo.update(time);
+        // Verifica colisão com castelo por distância
+        if (inimigo.active && !inimigo.estaMorto) {
+          const dist = Phaser.Math.Distance.Between(inimigo.x, inimigo.y, this.castelo.x, this.castelo.y);
+          if (dist < this.castelo.raioColisao) {
+            inimigo.baterNoCastelo();
+          }
+        }
       });
     }
 
-    // Atualiza build zones
-    if (this.buildZonesList) {
+    // Atualiza build zones (verifica herói por distância)
+    if (this.buildZonesList && this.heroi) {
       this.buildZonesList.forEach((zona) => {
         if (zona.active && zona.ativa) {
-          // Verifica se herói ainda está na zona (overlap contínuo)
-          if (zona.heroiDentro) {
-            const dist = Phaser.Math.Distance.Between(this.heroi.x, this.heroi.y, zona.x, zona.y);
-            if (dist > 40) {
-              zona.heroiSaiu();
-            } else {
-              zona.update(time);
-            }
-          }
+          zona.verificarHeroi(this.heroi);
+          zona.update(time);
         }
       });
     }
