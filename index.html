@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Medieval Kingshot - Tower Defense medieval single-player com ranking global" />
+  <title>Medieval Kingshot</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #1a1410;
+      font-family: 'Georgia', serif;
+      color: #f5e6c8;
+    }
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at center, #2a1f15 0%, #0d0805 100%);
+    }
+    canvas {
+      display: block;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+      border: 2px solid #5a3a20;
+    }
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: #d4a544;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="loading">Carregando Medieval Kingshot...</div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

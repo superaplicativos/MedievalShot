@@ -1,0 +1,29 @@
+# Dependências
+node_modules/
+
+# Build
+dist/
+*.local
+
+# Variáveis de ambiente (NUNCA commitar suas chaves reais)
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor
+.vscode/*
+.idea/
+.DS_Store
+*.sw?
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log

@@ -1,0 +1,20 @@
+{
+  "name": "medieval-kingshot",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Tower Defense medieval single-player com sistema de ranking",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sprites": "python3 scripts/gerar_sprites.py"
+  },
+  "dependencies": {
+    "firebase": "^10.12.2",
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "vite": "^5.3.1"
+  }
+}
